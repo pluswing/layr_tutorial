@@ -4,6 +4,7 @@ services:
     build: .
     ports:
       - 3210:3210
+      - 8080:8080
     volumes:
       - ./:/app:delegated
     working_dir: /app
