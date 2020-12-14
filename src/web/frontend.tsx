@@ -7,9 +7,11 @@ import {
   view,
   useAsyncCall,
   useAsyncCallback,
-  useRecomputableMemo
+  useRecomputableMemo,
+  useBrowserRouter,
+  useAsyncMemo
 } from '@layr/react-integration';
-
+import {Routable, route} from '@layr/routable';
 import type {Message as MessageType} from './backend';
 
 async function main() {
@@ -26,6 +28,9 @@ async function main() {
           <small>{this.createdAt.toLocaleString()}</small>
           <br />
           <strong>{this.text}</strong>
+          <br />
+          {this.id}
+          <a href="/messages/{this.id}">Edit</a>
         </div>
       );
     }
@@ -67,17 +72,73 @@ async function main() {
     }
   }
 
-  class Guestbook extends Component {
+  class Guestbook extends Routable(Component) {
     @provide() static Message = Message;
 
     @attribute('Message[]') static existingMessages: Message[] = [];
 
-    @view() static Home() {
+    @view() static Root() {
+      const [router, isReady] = useBrowserRouter(this);
+
+      if (!isReady) {
+        return null;
+      }
+
+      const content = router.callCurrentRoute({
+        fallback: () => 'Sorry, there is nothing here.'
+      });
+
       return (
         <div style={{maxWidth: '700px', margin: '40px auto'}}>
           <h1>Guestbook</h1>
+          {content}
+        </div>
+      );
+    }
+
+    @route('/') @view() static Home() {
+      return (
+        <div>
           <this.MessageList />
           <this.MessageCreator />
+        </div>
+      );
+    }
+
+    @route('/messages/:id') @view() static MessageEditor({id}: {id: string}) {
+      const {Message} = this;
+
+      const [
+        {existingMessage, editedMessage} = {} as const,
+        isLoading
+      ] = useAsyncMemo(async () => {
+        const existingMessage = await Message.get(id, {text: true});
+        const editedMessage = existingMessage.fork();
+        return {existingMessage, editedMessage};
+      }, [id]);
+
+      const saveMessage = useCallback(async () => {
+        await editedMessage!.save();
+        existingMessage!.merge(editedMessage!);
+        this.Home.navigate();
+      }, [existingMessage, editedMessage]);
+
+      if (isLoading) {
+        return null;
+      }
+
+      if (editedMessage === undefined) {
+        return (
+          <p style={{color: 'red'}}>
+            Sorry, an error occurred while loading a guestbook’s message.
+          </p>
+        );
+      }
+
+      return (
+        <div>
+          <h2>Edit a Message</h2>
+          <editedMessage.Form onSubmit={saveMessage} />
         </div>
       );
     }
@@ -141,9 +202,10 @@ async function main() {
         </div>
       );
     }
+
   }
 
-  ReactDOM.render(<Guestbook.Home />, document.getElementById('root'));
+  ReactDOM.render(<Guestbook.Root />, document.getElementById('root'));
 }
 
 main().catch((error) => console.error(error));

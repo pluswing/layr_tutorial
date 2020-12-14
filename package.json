@@ -27,6 +27,7 @@
     "@layr/component-http-server": "^1.0.9",
     "@layr/memory-store": "^1.0.6",
     "@layr/react-integration": "^1.0.10",
+    "@layr/routable": "^1.0.8",
     "@layr/storable": "^1.0.9",
     "react": "^17.0.1",
     "react-dom": "^17.0.1"
