@@ -21,16 +21,23 @@ async function main() {
 
   const BackendMessage = (await client.getComponent()) as typeof MessageType;
 
+  class Session extends BackendMessage.Session {
+    @attribute('string?', {
+      getter() {
+        return window.localStorage.getItem('secret') || undefined;
+      }
+    })
+    static secret?: string;
+  }
+
   class Message extends BackendMessage {
+    @provide() static Session = Session;
     @view() Viewer() {
       return (
         <div>
           <small>{this.createdAt.toLocaleString()}</small>
           <br />
           <strong>{this.text}</strong>
-          <br />
-          {this.id}
-          <a href="/messages/{this.id}">Edit</a>
         </div>
       );
     }
@@ -173,6 +180,11 @@ async function main() {
             this.existingMessages.map((message) => (
               <div key={message.id} style={{marginTop: '15px'}}>
                 <message.Viewer />
+                {Message.Session.secret && (
+                  <div style={{marginTop: '5px'}}>
+                    <this.MessageEditor.Link params={message}>Edit</this.MessageEditor.Link>
+                  </div>
+                )}
               </div>
             ))
           ) : (
