@@ -1,6 +1,7 @@
 import {Component, expose, validators, provide} from '@layr/component';
 import {Storable, primaryIdentifier, attribute} from '@layr/storable';
-import {MemoryStore} from '@layr/memory-store';
+// import {MemoryStore} from '@layr/memory-store';
+import {MongoDBStore} from '@layr/mongodb-store';
 import {ComponentHTTPServer} from '@layr/component-http-server';
 import {WithRoles, role} from '@layr/with-roles';
 
@@ -42,8 +43,9 @@ export class Message extends WithRoles(Storable(Component)) {
   }
 }
 
-const store = new MemoryStore();
-store.registerStorable(Message);
-
+// const store = new MemoryStore();
+// store.registerStorable(Message);
+const store = new MongoDBStore('mongodb://root:root@mongodb:27017');
+store.registerRootComponent(Message);
 const server = new ComponentHTTPServer(Message, {port: 3210});
 server.start();

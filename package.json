@@ -26,6 +26,7 @@
     "@layr/component-http-client": "^1.0.9",
     "@layr/component-http-server": "^1.0.9",
     "@layr/memory-store": "^1.0.6",
+    "@layr/mongodb-store": "^1.0.7",
     "@layr/react-integration": "^1.0.10",
     "@layr/routable": "^1.0.8",
     "@layr/storable": "^1.0.9",

@@ -9,3 +9,9 @@ services:
       - ./:/app:delegated
     working_dir: /app
     tty: true
+  mongodb:
+    image: mongo:3.6.21-xenial
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
